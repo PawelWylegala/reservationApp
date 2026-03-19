@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Rezerwacji Pokoi</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0f0f1a;
+            color: #e8e8f0;
+            min-height: 100vh;
+        }
+
+        header {
+            background: #1a1a2e;
+            border-bottom: 1px solid #2a2a4f;
+            padding: 20px 40px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        header h1 {
+            font-size: 1.4rem;
+            color: #7c6af7;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 24px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .card {
+            background: #1a1a2e;
+            border: 1px solid #2a2a4f;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            background: #7c6af7;
+            padding: 14px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .card-header.orange { background: #f7a26a; color: #1a1a14; }
+        .card-header.teal { background: #2dd4bf; color: #1a1a14; }
+        .card-header.red { background: #f87171; color: white; }
+
+        .card-body { padding: 20px; }
+
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            color: #8888aa;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        input {
+            width: 100%;
+            background: #0f0f1a;
+            border: 1px solid #2a2a4f;
+            border-radius: 6px;
+            padding: 10px 14px;
+            color: #e8e8f0;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus { border-color: #7c6af7; }
+
+        select {
+            width: 100%;
+            background: #0f0f1a;
+            border: 1px solid #2a2a4f;
+            border-radius: 6px;
+            padding: 10px 14px;
+            color: #e8e8f0;
+            font-size: 14px;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            background: #7c6af7;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 8px;
+        }
+
+        button:hover { background: #6a58e0; }
+        button.orange { background: #f7a26a; color: #1a1a14; }
+        button.orange:hover { background: #e8905a; }
+        button.red { background: #f87171; }
+        button.red:hover { background: #e06060; }
+
+        .list-item {
+            background: #0f0f1a;
+            border: 1px solid #2a2a4f;
+            border-radius: 8px;
+            padding: 14px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .list-item-info { flex: 1; }
+        .list-item-name { font-weight: 600; color: #e8e8f0; margin-bottom: 4px; }
+        .list-item-detail { font-size: 12px; color: #8888aa; }
+
+        .badge {
+            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .badge-active { background: rgba(45,212,191,0.15); color: #2dd4bf; border: 1px solid rgba(45,212,191,0.3); }
+        .badge-cancelled { background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid rgba(248,113,113,0.3); }
+
+        .btn-small {
+            width: auto;
+            padding: 6px 14px;
+            font-size: 12px;
+            margin-top: 0;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 6px;
+            margin-bottom: 14px;
+            font-size: 13px;
+            display: none;
+        }
+
+        .alert-success { background: rgba(45,212,191,0.1); border: 1px solid rgba(45,212,191,0.3); color: #2dd4bf; }
+        .alert-error { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); color: #f87171; }
+
+        .full-width { grid-column: 1 / -1; }
+
+        .empty { color: #8888aa; font-size: 13px; text-align: center; padding: 20px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🏢 System Rezerwacji Pokoi</h1>
+</header>
+
+<div class="container">
+
+    <!-- DODAJ POKÓJ -->
+    <div class="card">
+        <div class="card-header">➕ Dodaj pokój</div>
+        <div class="card-body">
+            <div id="room-alert" class="alert"></div>
+            <div class="form-group">
+                <label>Nazwa pokoju</label>
+                <input type="text" id="room-name" placeholder="np. Sala konferencyjna A">
+            </div>
+            <div class="form-group">
+                <label>Pojemność (liczba osób)</label>
+                <input type="number" id="room-capacity" placeholder="np. 10" min="1">
+            </div>
+            <button onclick="createRoom()">Dodaj pokój</button>
+        </div>
+    </div>
+
+    <!-- ZAREZERWUJ POKÓJ -->
+    <div class="card">
+        <div class="card-header orange">📅 Zarezerwuj pokój</div>
+        <div class="card-body">
+            <div id="reservation-alert" class="alert"></div>
+            <div class="form-group">
+                <label>Wybierz pokój</label>
+                <select id="reservation-room">
+                    <option value="">-- wybierz pokój --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Od</label>
+                <input type="datetime-local" id="reservation-start">
+            </div>
+            <div class="form-group">
+                <label>Do</label>
+                <input type="datetime-local" id="reservation-end">
+            </div>
+            <div class="form-group">
+                <label>Imię i nazwisko</label>
+                <input type="text" id="reservation-person" placeholder="np. Jan Kowalski">
+            </div>
+            <button class="orange" onclick="makeReservation()">Zarezerwuj</button>
+        </div>
+    </div>
+
+    <!-- LISTA POKOI -->
+    <div class="card">
+        <div class="card-header teal">🏠 Lista pokoi</div>
+        <div class="card-body">
+            <div id="rooms-list"><p class="empty">Brak pokoi</p></div>
+            <button style="margin-top:14px" onclick="loadRooms()">Odśwież</button>
+        </div>
+    </div>
+
+    <!-- LISTA REZERWACJI -->
+    <div class="card">
+        <div class="card-header red">📋 Lista rezerwacji</div>
+        <div class="card-body">
+            <div id="reservations-list"><p class="empty">Brak rezerwacji</p></div>
+            <button class="red" style="margin-top:14px" onclick="loadReservations()">Odśwież</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const API = 'http://localhost:8080/api';
+
+    // POMOCNICZE
+    function showAlert(id, message, type) {
+        const el = document.getElementById(id);
+        el.textContent = message;
+        el.className = `alert alert-${type}`;
+        el.style.display = 'block';
+        setTimeout(() => el.style.display = 'none', 4000);
+    }
+
+    function formatDate(dateStr) {
+        return new Date(dateStr).toLocaleString('pl-PL');
+    }
+
+    // POKOJE
+    async function loadRooms() {
+        const res = await fetch(`${API}/rooms`);
+        const rooms = await res.json();
+
+        const select = document.getElementById('reservation-room');
+        select.innerHTML = '<option value="">-- wybierz pokój --</option>';
+        rooms.forEach(r => {
+            select.innerHTML += `<option value="${r.id}">${r.name} (${r.capacity} os.)</option>`;
+        });
+
+        const list = document.getElementById('rooms-list');
+        if (rooms.length === 0) {
+            list.innerHTML = '<p class="empty">Brak pokoi</p>';
+            return;
+        }
+        list.innerHTML = rooms.map(r => `
+            <div class="list-item">
+                <div class="list-item-info">
+                    <div class="list-item-name">${r.name}</div>
+                    <div class="list-item-detail">Pojemność: ${r.capacity} osób</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    async function createRoom() {
+        const name = document.getElementById('room-name').value.trim();
+        const capacity = parseInt(document.getElementById('room-capacity').value);
+
+        if (!name || !capacity) {
+            showAlert('room-alert', 'Wypełnij wszystkie pola!', 'error');
+            return;
+        }
+
+        const res = await fetch(`${API}/rooms`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, capacity })
+        });
+
+        if (res.ok) {
+            showAlert('room-alert', 'Pokój dodany!', 'success');
+            document.getElementById('room-name').value = '';
+            document.getElementById('room-capacity').value = '';
+            loadRooms();
+        } else {
+            const err = await res.json();
+            showAlert('room-alert', err.message, 'error');
+        }
+    }
+
+    // REZERWACJE
+    async function loadReservations() {
+        const res = await fetch(`${API}/rooms/reservations`);
+        const reservations = await res.json();
+
+        const list = document.getElementById('reservations-list');
+        if (reservations.length === 0) {
+            list.innerHTML = '<p class="empty">Brak rezerwacji</p>';
+            return;
+        }
+        list.innerHTML = reservations.map(r => `
+            <div class="list-item">
+                <div class="list-item-info">
+                    <div class="list-item-name">${r.roomName}</div>
+                    <div class="list-item-detail">
+                        ${formatDate(r.startTime)} → ${formatDate(r.endTime)}<br>
+                        👤 ${r.reservedBy}
+                    </div>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+                    <span class="badge ${r.status === 'ACTIVE' ? 'badge-active' : 'badge-cancelled'}">
+                        ${r.status === 'ACTIVE' ? 'Aktywna' : 'Anulowana'}
+                    </span>
+                    ${r.status === 'ACTIVE' ? `
+                        <button class="btn-small red" onclick="cancelReservation('${r.id}')">Anuluj</button>
+                    ` : ''}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    async function makeReservation() {
+        const roomId = document.getElementById('reservation-room').value;
+        const start = document.getElementById('reservation-start').value;
+        const end = document.getElementById('reservation-end').value;
+        const person = document.getElementById('reservation-person').value.trim();
+
+        if (!roomId || !start || !end || !person) {
+            showAlert('reservation-alert', 'Wypełnij wszystkie pola!', 'error');
+            return;
+        }
+
+        const res = await fetch(`${API}/rooms/${roomId}/reservations`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                startTime: start + ':00',
+                endTime: end + ':00',
+                reservedBy: person
+            })
+        });
+
+        if (res.ok) {
+            showAlert('reservation-alert', 'Rezerwacja dodana!', 'success');
+            document.getElementById('reservation-start').value = '';
+            document.getElementById('reservation-end').value = '';
+            document.getElementById('reservation-person').value = '';
+            loadReservations();
+        } else {
+            const err = await res.json();
+            showAlert('reservation-alert', err.message, 'error');
+        }
+    }
+
+    async function cancelReservation(id) {
+        const res = await fetch(`${API}/rooms/reservations/${id}`, {
+            method: 'DELETE'
+        });
+
+        if (res.ok) {
+            loadReservations();
+        } else {
+            const err = await res.json();
+            alert(err.message);
+        }
+    }
+
+    // Załaduj dane przy starcie
+    loadRooms();
+    loadReservations();
+</script>
+
+</body>
+</html>
