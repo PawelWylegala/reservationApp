@@ -137,7 +137,7 @@ class ReservationServiceTest {
         TimeSlot termin2 = new TimeSlot(LocalDateTime.of(2026,03,20,12,00),
                 LocalDateTime.of(2026,03,20,14,00));
 
-        when(reservationRepository.findAll()).thenReturn(List.of(
+        when(reservationRepository.findByStatus(ReservationStatus.ACTIVE)).thenReturn(List.of(
                 new Reservation(room,termin1,"Jan Kowalski"),
                 new Reservation(room,termin2,"Paweł Kowalski")));
 
